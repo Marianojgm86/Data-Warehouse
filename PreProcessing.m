@@ -1,3 +1,5 @@
+%% Monthly Data
+
 raw = databank.fromCSV('raw\dataBase.csv');
 
 list1 = {'vm_cpi','va_cpi','va_cpi_core','i','i_star'};
