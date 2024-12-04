@@ -87,7 +87,10 @@ Modification on SVAR50?
 
 %}
 
-list = {'L_gdp_star_gap_ham', 'D4L_pet', 'i_star','D4L_REM' ,...
+listVAR = {'L_gdp_star_gap_ham', 'D4L_pet', 'i_star','D4L_REM' ,...
         'L_gdp_gap_hp','D4L_cpi','D4L_ner','D4L_MB','i'}; 
 
 
+data_var = data_m*listVAR;
+
+dbplot(data_var)
