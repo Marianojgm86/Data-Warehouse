@@ -87,10 +87,13 @@ Modification on SVAR50?
 
 %}
 
-listVAR = {'L_gdp_star_gap_ham', 'D4L_pet', 'i_star','D4L_REM' ,...
-        'L_gdp_gap_hp','D4L_cpi','D4L_ner','D4L_MB','i'}; 
+listVAR = {'D4L_pet', 'i_star','D4L_REM' ,...
+        'D4L_cpi','D4L_ner','D4L_MB','i'}; 
 
-
+% Filtering database
 data_var = data_m*listVAR;
 
-dbplot(data_var)
+data_var.gdp_gap_star = data_m.L_gdp_star_gap_ham;
+data_var.gdp_gap = data_m.L_gdp_gap_ham;
+
+% dbplot(data_var);
