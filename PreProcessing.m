@@ -1,6 +1,6 @@
 %% Monthly Data
-clear all;
-clc;
+clear
+clc
 
 raw = databank.fromCSV('raw\dataBase.csv');
 
@@ -12,7 +12,7 @@ data_m = databank.apply(raw, @(x) 100*log(x),'SourceNames',list,'Prepend',"L_");
 data_m = databank.apply(data_m, @(x) x.diff(-12), 'startsWith','L_', 'Prepend','D4L_','RemoveStart',true);
 data_m = databank.apply(data_m, @(x) 12*x.diff(-1), 'startsWith','L_', 'Prepend','DLA_','RemoveStart',true);
 
-return
+
 %% GDP -> GDP_GAPS for GT and EEUU
 
 % data_m = databank.withEmpty('l_gdp_m');
@@ -53,7 +53,6 @@ plot([data_m.L_gdp_gap_star_hp, data_m.L_gdp_star_gap_ham]);
 legend({'HP','Hamilton'}, 'location','NW');
 zeroline;
 
-return
 %% Saving Monthly Database
 
 databank.toCSV(data_m, 'output/Processed_data.csv',Inf);
@@ -97,3 +96,28 @@ data_var.gdp_gap_star = data_m.L_gdp_star_gap_ham;
 data_var.gdp_gap = data_m.L_gdp_gap_ham;
 
 % dbplot(data_var);
+
+% Stationarity tests for VAR variables
+station = {};
+lista = fieldnames(data_var);
+
+for i = 1:length(lista)
+    % ADF Test with 4 lags to control for possible base effects
+    if adftest(data_var.(lista{i}).data, "Lags",4) == 1 %"Alpha", 0.1
+        station{i} = strcat(lista{i},' stationary');
+    else
+        station{i} = strcat(lista{i},' not stationary');
+    end
+end
+
+databank.toCSV(data_var, 'output/VAR.csv',Inf);
+
+%% SVAR Data
+% Start with: i_star, pce_core (or pet), cpi, output gap, i
+list_svar = {'i_star', 'D4L_pce_core', 'D4L_cpi', 'i'};
+
+data_svar = data_m*list_svar;
+data_svar.gdp_gap = data_m.L_gdp_gap_ham;
+data_svar.gdp_gap_star = data_m.L_gdp_star_gap_ham;
+
+databank.toCSV(data_svar, 'output/SVAR.csv',Inf);
