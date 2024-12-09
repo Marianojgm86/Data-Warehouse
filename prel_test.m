@@ -32,7 +32,7 @@ startHist = BasicSvar.v3.Range(1);
 endHist = BasicSvar.v3.Range(end);
 
 % VAR
-[vB, vdB] = estimate(vB, BasicSvar,startHist:endHist,'order=',2);
+[vB, vdB] = estimate(vB, BasicSvar,startHist:endHist,'order=',1);
 [sB, ~, Bb, ~]= SVAR(vB, vdB, 'method','chol'); 
 [sdB,sdcB] = srf(sB,1:100,'presample',true);
 
@@ -45,7 +45,7 @@ for i = 1:length(yNames)
     for j = length(eNames)
         count = count +1;
         subplot(2,2,count)      
-        plot(0:100, sdB.(yNames{i}){:,j}.cumsum);
+        plot(0:100, sdB.(yNames{i}){:,j});
         grid on;
         grfun.zeroline();
         title(['Response in ', yNames{i}, ' to shock in ',eNames{j}],...
@@ -54,6 +54,8 @@ for i = 1:length(yNames)
 end
 
 grfun.ftitle('IRF Basic');
+
+
 
 %% SVAR 1 
 data2 = databank.fromCSV("output\SVAR.csv");
