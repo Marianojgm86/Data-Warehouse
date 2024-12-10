@@ -5,8 +5,8 @@ dataProc = databank.fromCSV("output\Processed_data.csv");
 
 %% Quarterly Basic GDP, Inf, Interest Rate
 BQ.v1 = convert(dataProc.L_gdp_gap_hp, 'Q', 'method=','last');
-BQ.v2 = convert( dataProc.D4L_cpi, 'Q', 'method=','last');
-BQ.v3 = convert( dataProc.i, 'Q', 'method=','mean');
+BQ.v2 = convert(dataProc.D4L_cpi, 'Q', 'method=','last');
+BQ.v3 = convert(dataProc.i, 'Q', 'method=','mean');
 
 startHist = BQ.v3.Range(1);
 endHist = BQ.v3.Range(end);
