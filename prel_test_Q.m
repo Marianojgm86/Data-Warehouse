@@ -2,6 +2,7 @@
 clear
 clc
 dataProc = databank.fromCSV("output\Processed_data.csv");
+mp = databank.fromCSV('raw\mp_shock_gt.csv');
 
 %% Quarterly Basic GDP, Inf, Interest Rate
 BQ.v1 = convert(dataProc.L_gdp_gap_hp, 'Q', 'method=','last');
@@ -14,7 +15,7 @@ endHist = BQ.v3.Range(end);
 % VAR Object
 vBQ = VAR(fieldnames(BQ));
 [vBQ, vdBQ] = estimate(vBQ, BQ,startHist:endHist,'order=',2);
-[sBQ, ~, BBQ, ~]= SVAR(vBQ, vdBQ, 'method','chol'); 
+[sBQ, resBBQ, BBQ, ~]= SVAR(vBQ, vdBQ, 'method','chol'); 
 [sdBQ,sdcBQ] = srf(sBQ,1:100,'presample',true);
 
 yNames = get(sBQ,'yNames');
@@ -35,6 +36,69 @@ for i = 1:length(yNames)
 end
 
 grfun.ftitle('IRF Basic Quarterly');
+
+
+%% Basic using the simple instrument mp_shock, GDP, Inf, Interest Rate
+%
+figure;
+subplot(1,2,1)
+plot([mp.i_pol, mp.taylor_rule]);
+legend('Monetary Policy Rate','Taylor Rule Implied Rate');
+hold on
+bar(mp.mp_shock_iv, 'DisplayName','Syntetic MP Shock');
+title('Synthetic Monetary Policy Shock');
+
+subplot(1,2,2)
+plot([mp.mp_shock_iv, resBBQ.res_v3{qq(2005,1):end}]);
+legend('Taylor Rule Shocks','VAR Shocks');
+zeroline;
+title('MP Shocks')
+%
+%% Related SVAR
+BQshock.v1 = mp.mp_shock_iv;
+BQshock.v2 = convert(dataProc.L_gdp_gap_hp, 'Q', 'method=','last');
+BQshock.v3 = convert(dataProc.D4L_cpi, 'Q', 'method=','last');
+BQshock.v4 = convert(dataProc.i, 'Q', 'method=','mean');
+
+startHist = BQshock.v1.Range(1);
+endHist = BQshock.v1.Range(end);
+
+% VAR Object
+vBQsh = VAR(fieldnames(BQshock));
+[vBQsh, vdBQsh] = estimate(vBQsh, BQshock,startHist:endHist,'order=',1);
+[sBQsh, ~, BBQsh, ~]= SVAR(vBQsh, vdBQsh, 'method','chol'); 
+[sdBQsh,sdcBQsh] = srf(sBQsh,1:100,'presample',true);
+
+yNames = get(sBQsh,'yNames');
+eNames = get(sBQsh, 'eNames');
+rNames = {'MP shock','Output Gap', 'Inflation', 'Interest Rate'};%
+
+figure();
+count=0;
+for i = 1:length(yNames)
+    for j = 1%length(eNames)
+        count = count +1;
+        subplot(2,2,count)      
+        plot(0:40, sdBQsh.(yNames{i}){:,j}, 'DisplayName','Taylor Rule Shock');
+        
+        if i ==  2 || i == 3 || i == 4
+            hold on
+            plot(0:40, sdBQ.(yNames{i-1}){:,3}, 'DisplayName','VAR Shock', 'LineStyle','--');
+            hold off
+        end
+        legend()
+        grid on;
+        grfun.zeroline();
+        title(['Response in ', rNames{i}, ' to shock in ',rNames{j}],...
+            'interpreter','none');
+    end
+end
+
+grfun.ftitle('IRF Basic Quarterly with Taylor Rule Shock');
+
+
+
+
 
 %% Controling for the price puzzle
 % Quarterly Basic GDP, Inf, Interest Rate
